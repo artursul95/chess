@@ -27,25 +27,26 @@ class Piece:
         return cells_map
 
     cells_map=generate_cells_map()
-    letters={'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}
+    letters_to_num={'a':1, 'b':2, 'c':3, 'd':4, 'e':5, 'f':6, 'g':7, 'h':8}
     numbers={'1', '2', '3', '4', '5', '6', '7', '8'}
-    def __init__(self,pos,name):
+    def __init__(self,pos,name,color):
         self.pos=pos
         self.cells_map[pos]=self
         self.name=name
+        self.color=color
 
     def __str__(self):
-        return f"{self.name} - {self.pos}"
+        return f"{self.name} {self.pos}"
 
     def __repr__(self):
-        return self.__str__()
+        return "Object: " + self.__str__()
 
 
 class Pawn(Piece):
     start_positions = {'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2','a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'}
     def __init__(self,pos,color):
-        super().__init__(pos,name="Pawn")
-        self.color=color
+        super().__init__(pos,name="Pawn",color=color)
+
 
     def is_legal_move(self,from_cell,to_cell):
         #нужна ли мне эта проверка?
@@ -58,13 +59,13 @@ class Pawn(Piece):
                 self.pos==to_cell):
             return False
 
-        if self.color=='w':
+        if self.color==1:
             if from_cell not in self.start_positions:
                 return int(to_cell[-1])-int(from_cell[-1])==1
             return 0<int(to_cell[-1])-int(from_cell[-1])<=2
         else:
             if from_cell not in self.start_positions:
-                return int(to_cell[-1])-int(from_cell[-1])==-1
+                return int(from_cell[-1])-int(to_cell[-1])==1
             return 0<int(from_cell[-1])-int(to_cell[-1])<=2
 
 
@@ -77,7 +78,44 @@ class Pawn(Piece):
         self.pos=to_cell
 
 
-pawn=Pawn('a7','b')
-print(pawn.cells_map)
-pawn.move('a7','a5')
-print(pawn.cells_map)
+    def is_legal_capture(self,from_cell,to_cell):
+        # нужна ли мне эта проверка?
+        if not isinstance(self.cells_map[from_cell], self.__class__):
+            return False
+
+        if (to_cell not in self.cells_map or
+                not self.cells_map[to_cell] or
+                from_cell==to_cell):
+            return False
+
+        if -self.cells_map[from_cell].color!=self.cells_map[to_cell].color:
+            return False
+
+        num_of_letter_from=self.letters_to_num[from_cell[0]]
+        num_of_letter_to=self.letters_to_num[to_cell[0]]
+        if abs(num_of_letter_from-num_of_letter_to)!=1:
+            return False
+
+        if self.color==1 and int(to_cell[-1])-int(from_cell[-1])!=1:
+            return False
+
+        if self.color==-1 and int(from_cell[-1])-int(to_cell[-1])!=1:
+            return False
+
+        return True
+
+    def capture(self,from_cell,to_cell):
+        if not self.is_legal_capture(from_cell,to_cell):
+            raise IllegalMoveError(from_cell,to_cell,self.name)
+
+        self.cells_map[from_cell]=None
+        self.cells_map[to_cell]=self
+        self.pos=to_cell
+
+
+pawn_w=Pawn('c7',-1)
+pawn_b=Pawn('b6',1)
+
+print(pawn_w.cells_map)
+pawn_w.capture('c7','b6')
+print(pawn_w.cells_map)
