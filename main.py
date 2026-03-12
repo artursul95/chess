@@ -1,3 +1,11 @@
+# def is_legal_common(func):
+#     def wrapper(obj,from_cell,to_cell):
+#         if not isinstance(obj.cells_map[from_cell],obj.__class__):
+#             return False
+#         return func(obj,from_cell,to_cell)
+#     return wrapper
+
+
 class IllegalMoveError(Exception):
     def __init__(self,from_cell,to_cell,piece):
         self.from_cell=from_cell
@@ -34,6 +42,11 @@ class Piece:
         self.cells_map[pos]=self
         self.name=name
         self.color=color
+
+    def replace_piece(self,from_cell,to_cell):
+        self.cells_map[from_cell] = None
+        self.cells_map[to_cell] = self
+        self.pos = to_cell
 
     def __str__(self):
         return f"{self.name} {self.pos}"
@@ -73,9 +86,7 @@ class Pawn(Piece):
         if not self.is_legal_move(from_cell,to_cell):
             raise IllegalMoveError(from_cell,to_cell,self.name)
 
-        self.cells_map[from_cell]=None
-        self.cells_map[to_cell]=self
-        self.pos=to_cell
+        self.replace_piece(from_cell, to_cell)
 
 
     def is_legal_capture(self,from_cell,to_cell):
@@ -108,9 +119,17 @@ class Pawn(Piece):
         if not self.is_legal_capture(from_cell,to_cell):
             raise IllegalMoveError(from_cell,to_cell,self.name)
 
-        self.cells_map[from_cell]=None
-        self.cells_map[to_cell]=self
-        self.pos=to_cell
+        self.replace_piece(from_cell,to_cell)
+
+
+    def is_legal_en_passant(self,from_cell,to_cell):
+        pass
+
+
+    def en_passant(self,from_cell,to_cell):
+        if not self.is_legal_en_passant(from_cell,to_cell):
+            raise IllegalMoveError
+
 
 
 pawn_w=Pawn('c7',-1)
