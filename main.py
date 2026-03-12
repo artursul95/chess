@@ -1,9 +1,16 @@
-# def is_legal_common(func):
-#     def wrapper(obj,from_cell,to_cell):
-#         if not isinstance(obj.cells_map[from_cell],obj.__class__):
-#             return False
-#         return func(obj,from_cell,to_cell)
-#     return wrapper
+from functools import wraps
+
+def is_legal_common(func):
+    @wraps(func)
+    def wrapper(obj,from_cell,to_cell):
+        if not isinstance(obj.cells_map[from_cell],obj.__class__):
+            return False
+
+        if to_cell not in obj.cells_map or obj.pos == to_cell:
+            return False
+
+        return func(obj,from_cell,to_cell)
+    return wrapper
 
 
 class IllegalMoveError(Exception):
@@ -60,16 +67,10 @@ class Pawn(Piece):
     def __init__(self,pos,color):
         super().__init__(pos,name="Pawn",color=color)
 
-
+    @is_legal_common
     def is_legal_move(self,from_cell,to_cell):
-        #нужна ли мне эта проверка?
-        if not isinstance(self.cells_map[from_cell],self.__class__):
-            return False
 
-        if (from_cell[0] != to_cell[0] or
-                to_cell not in self.cells_map or
-                self.cells_map[to_cell] or
-                self.pos==to_cell):
+        if from_cell[0] != to_cell[0] or self.cells_map[to_cell]:
             return False
 
         if self.color==1:
@@ -88,15 +89,10 @@ class Pawn(Piece):
 
         self.replace_piece(from_cell, to_cell)
 
-
+    @is_legal_common
     def is_legal_capture(self,from_cell,to_cell):
-        # нужна ли мне эта проверка?
-        if not isinstance(self.cells_map[from_cell], self.__class__):
-            return False
 
-        if (to_cell not in self.cells_map or
-                not self.cells_map[to_cell] or
-                from_cell==to_cell):
+        if not self.cells_map[to_cell]:
             return False
 
         if -self.cells_map[from_cell].color!=self.cells_map[to_cell].color:
@@ -133,7 +129,7 @@ class Pawn(Piece):
 
 
 pawn_w=Pawn('c7',-1)
-pawn_b=Pawn('b6',1)
+pawn_b=Pawn('b6',-1)
 
 print(pawn_w.cells_map)
 pawn_w.capture('c7','b6')
