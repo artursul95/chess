@@ -1,4 +1,6 @@
 from functools import wraps
+from logging import RootLogger
+
 
 def is_legal_common(func):
     @wraps(func)
@@ -22,6 +24,12 @@ class IllegalMoveError(Exception):
     def __str__(self):
         return f"You are trying to make illegal move: {self.piece} {self.from_cell}-{self.to_cell}"
 
+class IllegalPromotion(Exception):
+    def __init__(self,piece):
+        self.piece=piece
+
+    def __str__(self):
+        return f'You are trying to promote wrong piece: {self.piece}'
 
 class Board:
     pass
@@ -68,6 +76,13 @@ class Pawn(Piece):
         super().__init__(pos,name="Pawn",color=color)
         self.last_move=None
 
+    def promote(self,to_cell,piece='Queen'):
+        promotion_pieces={'Queen','Bishop','Knight','Rook'}
+        if piece not in promotion_pieces:
+            raise IllegalPromotion(piece)
+        self.cells_map[to_cell]='создать объект фигуры тут'
+
+
     @is_legal_common
     def is_legal_move(self,from_cell,to_cell):
 
@@ -90,6 +105,13 @@ class Pawn(Piece):
 
         self.replace_piece(from_cell, to_cell)
         self.last_move=(from_cell,to_cell)
+
+        if self.color==1 and int(to_cell[1])==8:
+            self.promote(to_cell,'Нужна информация о фигуре, необходим ввод от пользователя (сейчас дефолт: квин)')
+
+        elif self.color==-1 and int(to_cell[1])==1:
+            self.promote(to_cell,'Нужна информация о фигуре, необходим ввод от пользователя (сейчас дефолт: квин)')
+
 
     @is_legal_common
     def is_legal_capture(self,from_cell,to_cell):
@@ -119,6 +141,12 @@ class Pawn(Piece):
 
         self.replace_piece(from_cell,to_cell)
         self.last_move=(from_cell,to_cell)
+
+        if self.color == 1 and int(to_cell[1]) == 8:
+            self.promote(to_cell, 'Нужна информация о фигуре, необходим ввод от пользователя (сейчас дефолт: квин)')
+
+        elif self.color == -1 and int(to_cell[1]) == 1:
+            self.promote(to_cell, 'Нужна информация о фигуре, необходим ввод от пользователя (сейчас дефолт: квин)')
 
 
     @is_legal_common
