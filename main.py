@@ -66,6 +66,7 @@ class Pawn(Piece):
     start_positions = {'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2','a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'}
     def __init__(self,pos,color):
         super().__init__(pos,name="Pawn",color=color)
+        self.last_move=None
 
     @is_legal_common
     def is_legal_move(self,from_cell,to_cell):
@@ -88,6 +89,7 @@ class Pawn(Piece):
             raise IllegalMoveError(from_cell,to_cell,self.name)
 
         self.replace_piece(from_cell, to_cell)
+        self.last_move=(from_cell,to_cell)
 
     @is_legal_common
     def is_legal_capture(self,from_cell,to_cell):
@@ -116,21 +118,55 @@ class Pawn(Piece):
             raise IllegalMoveError(from_cell,to_cell,self.name)
 
         self.replace_piece(from_cell,to_cell)
+        self.last_move=(from_cell,to_cell)
 
 
+    @is_legal_common
     def is_legal_en_passant(self,from_cell,to_cell):
-        pass
+
+        if self.cells_map[to_cell]:
+            return False
+
+        captured_cell=to_cell[0]+from_cell[-1]
+
+        if not isinstance(self.cells_map[captured_cell],Pawn) :
+            return False
+
+        captured_piece=self.cells_map[captured_cell]
+
+        if -self.cells_map[from_cell].color!=self.cells_map[captured_cell].color:
+            return False
+
+        num_of_letter_from = self.letters_to_num[from_cell[0]]
+        num_of_letter_to = self.letters_to_num[to_cell[0]]
+        if abs(num_of_letter_from - num_of_letter_to) != 1:
+            return False
+
+        if not captured_piece.last_move:
+            return False
+
+        if abs(int(captured_piece.last_move[0][1])-int(captured_piece.last_move[1][1]))!=2:
+            return False
+
+        if abs(int(from_cell[1])-int(to_cell[1]))!=1:
+            return False
+
+        return True
 
 
     def en_passant(self,from_cell,to_cell):
         if not self.is_legal_en_passant(from_cell,to_cell):
-            raise IllegalMoveError
+            raise IllegalMoveError(from_cell,to_cell,self.name)
+
+        self.replace_piece(from_cell,to_cell)
+        captured_cell = to_cell[0] + from_cell[-1]
+        self.cells_map[captured_cell]=None
 
 
-
-pawn_w=Pawn('c7',-1)
-pawn_b=Pawn('b6',-1)
+pawn_w=Pawn('c5',1)
+pawn_b=Pawn('b7',-1)
+pawn_b.move('b7','b5')
 
 print(pawn_w.cells_map)
-pawn_w.capture('c7','b6')
+pawn_w.en_passant('c5','b5')
 print(pawn_w.cells_map)
