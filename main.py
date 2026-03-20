@@ -1,5 +1,4 @@
 from functools import wraps
-from logging import RootLogger
 
 
 def is_legal_common(func):
@@ -32,10 +31,6 @@ class IllegalPromotion(Exception):
         return f'You are trying to promote wrong piece: {self.piece}'
 
 class Board:
-    pass
-
-
-class Piece:
     @staticmethod
     def generate_cells_map():
         cells_map = {}
@@ -49,9 +44,25 @@ class Piece:
 
         return cells_map
 
-    cells_map=generate_cells_map()
-    letters_to_num={'a':1, 'b':2, 'c':3, 'd':4, 'e':5, 'f':6, 'g':7, 'h':8}
-    numbers={'1', '2', '3', '4', '5', '6', '7', '8'}
+    @staticmethod
+    def generate_cells_matrix(self):
+        cells_matrix=[['']*8 for _ in range(8)]
+        letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+        numbers = ['1', '2', '3', '4', '5', '6', '7', '8']
+
+        for i, letter in enumerate(letters):
+            for j, num in enumerate(numbers):
+                cells_matrix[i][j]=letter+num
+
+        return cells_matrix
+
+    cells_matrix=generate_cells_matrix()
+    cells_map = generate_cells_map()
+    letters_to_num = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8}
+    numbers = {'1', '2', '3', '4', '5', '6', '7', '8'}
+
+
+class Piece(Board):
     def __init__(self,pos,name,color):
         self.pos=pos
         self.cells_map[pos]=self
@@ -192,9 +203,8 @@ class Pawn(Piece):
 
 
 pawn_w=Pawn('c5',1)
-pawn_b=Pawn('b7',-1)
-pawn_b.move('b7','b5')
+pawn_b=Pawn('b6',-1)
 
 print(pawn_w.cells_map)
-pawn_w.en_passant('c5','b5')
+pawn_w.capture('c5','b6')
 print(pawn_w.cells_map)
