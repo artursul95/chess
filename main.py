@@ -68,8 +68,6 @@ class Piece(Board):
         self.color = color
         num=int(pos[1]) - 1
         letter=self.letters_to_num[pos[0]]-1
-
-        #возможно необязательная строка
         self.cells_matrix[num][letter]=True
 
     def replace_piece(self, from_cell, to_cell):
@@ -140,6 +138,56 @@ class Rook(Piece):
         self.replace_piece(from_cell, to_cell)
         self.replace_piece_matr(from_cell,to_cell)
         self.did_move = True
+
+    @is_legal_common
+    def is_legal_capture(self,from_cell,to_cell):
+        if not self.cells_map[to_cell]:
+            return False
+
+        if -self.cells_map[from_cell].color != self.cells_map[to_cell].color:
+            return False
+
+        if from_cell[0] != to_cell[0] and from_cell[1] != to_cell[1]:
+            return False
+
+        #проверка на взятие по горизонтали
+        if from_cell[1] == to_cell[1]:
+            from_letter_ind = self.letters_to_num[from_cell[0]]-1
+            to_letter_ind=self.letters_to_num[to_cell[0]]-1
+            ind_of_file=int(from_cell[1])-1
+            if to_letter_ind>from_letter_ind:
+                for i in range(from_letter_ind+1,to_letter_ind):
+                    if self.cells_matrix[ind_of_file][i] is True:
+                        return False
+            else:
+                for i in range(to_letter_ind+1,from_letter_ind):
+                    if self.cells_matrix[ind_of_file][i] is True:
+                        return False
+
+        #проверка на взятие по вертикали
+        elif from_cell[0] == to_cell[0]:
+            from_num_ind=int(from_cell[1])-1
+            to_num_ind=int(to_cell[1])-1
+            ind_of_file=self.letters_to_num[from_cell[0]]-1
+            if to_num_ind>from_num_ind:
+                for i in range(from_num_ind+1,to_num_ind):
+                    if self.cells_matrix[i][ind_of_file] is True:
+                        return False
+            else:
+                for i in range(to_num_ind+1,from_num_ind):
+                    if self.cells_matrix[i][ind_of_file] is True:
+                        return False
+
+        return True
+
+
+    def capture(self,from_cell,to_cell):
+        if not self.is_legal_capture(from_cell,to_cell):
+            raise IllegalMoveError(from_cell,to_cell,self.name)
+
+        self.replace_piece(from_cell,to_cell)
+        self.replace_piece_matr(from_cell,to_cell)
+
 
 
 class Pawn(Piece):
@@ -263,13 +311,13 @@ class Pawn(Piece):
         self.replace_piece_matr(from_cell,to_cell)
 
 
-pawn_w = Pawn('e4', 1)
+pawn_w = Pawn('f4', -1)
 pawn_b = Pawn('e5', -1)
 
 
-rook_w=Rook('f3',1)
+rook_w=Rook('f1',1)
 print(pawn_w.cells_map)
 
-rook_w.move('f3','f8')
+rook_w.capture('f1','f4')
 
 print(pawn_w.cells_map)
