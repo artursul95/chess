@@ -4,10 +4,11 @@ from functools import wraps
 def is_legal_common(func):
     @wraps(func)
     def wrapper(obj, from_cell, to_cell):
-        if not isinstance(obj.cells_map[from_cell], obj.__class__):
+
+        if to_cell not in obj.cells_map or from_cell not in obj.cells_map or obj.pos == to_cell:
             return False
 
-        if to_cell not in obj.cells_map or obj.pos == to_cell:
+        if not isinstance(obj.cells_map[from_cell], obj.__class__):
             return False
 
         return func(obj, from_cell, to_cell)
@@ -50,10 +51,6 @@ class Board:
     @staticmethod
     def generate_cells_matrix():
         cells_matrix = [[False] * 8 for _ in range(8)]
-
-        for i in range(8):
-            for j in range(8):
-                cells_matrix[i][j] = True if i in [0, 1, 6, 7] else False
 
         return cells_matrix
 
@@ -106,7 +103,7 @@ class Rook(Piece):
         if from_cell[0] != to_cell[0] and from_cell[1] != to_cell[1]:
             return False
 
-        #проверка на движение по горизонтали: сделал
+        #проверка на движение по горизонтали
         if from_cell[1] == to_cell[1]:
             from_letter_ind = self.letters_to_num[from_cell[0]]-1
             to_letter_ind=self.letters_to_num[to_cell[0]]-1
@@ -120,6 +117,19 @@ class Rook(Piece):
                     if self.cells_matrix[ind_of_file][i] is True:
                         return False
 
+        #проверка на движение по вертикали
+        elif from_cell[0] == to_cell[0]:
+            from_num_ind=int(from_cell[1])-1
+            to_num_ind=int(to_cell[1])-1
+            ind_of_file=self.letters_to_num[from_cell[0]]-1
+            if to_num_ind>from_num_ind:
+                for i in range(from_num_ind+1,to_num_ind+1):
+                    if self.cells_matrix[i][ind_of_file] is True:
+                        return False
+            else:
+                for i in range(to_num_ind,from_num_ind):
+                    if self.cells_matrix[i][ind_of_file] is True:
+                        return False
 
         return True
 
@@ -253,13 +263,13 @@ class Pawn(Piece):
         self.replace_piece_matr(from_cell,to_cell)
 
 
-pawn_w = Pawn('f4', 1)
-pawn_b = Pawn('b6', -1)
+pawn_w = Pawn('e4', 1)
+pawn_b = Pawn('e5', -1)
 
 
-rook_w=Rook('e4',1)
+rook_w=Rook('f3',1)
 print(pawn_w.cells_map)
 
-rook_w.move('e4','f5')
+rook_w.move('f3','f8')
 
 print(pawn_w.cells_map)
