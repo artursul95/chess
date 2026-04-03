@@ -1,10 +1,13 @@
 from functools import wraps
 
+from test import cells_matrix
+
 
 def is_legal_common(func):
     @wraps(func)
     def wrapper(obj, from_cell, to_cell):
 
+        #а если человек просто тронул фигуру и не собирался ходить? (obj.pos == to_cell)
         if to_cell not in obj.cells_map or from_cell not in obj.cells_map or obj.pos == to_cell:
             return False
 
@@ -66,23 +69,22 @@ class Piece(Board):
         self.cells_map[pos] = self
         self.name = name
         self.color = color
-        num=int(pos[1]) - 1
-        letter=self.letters_to_num[pos[0]]-1
-        self.cells_matrix[num][letter]=True
+        num_ind = 8 - int(pos[1])
+        letter_ind = self.letters_to_num[pos[0]] - 1
+        self.cells_matrix[num_ind][letter_ind] = True
 
     def replace_piece(self, from_cell, to_cell):
         self.cells_map[from_cell] = None
         self.cells_map[to_cell] = self
         self.pos = to_cell
 
-    def replace_piece_matr(self,from_cell,to_cell):
-        num_from = int(from_cell[1]) - 1
-        letter_from = self.letters_to_num[from_cell[0]] - 1
-        num_to = int(to_cell[1]) - 1
-        letter_to = self.letters_to_num[to_cell[0]] - 1
-        self.cells_matrix[num_from][letter_from]=False
-        self.cells_matrix[num_to][letter_to]=True
-
+    def replace_piece_matr(self, from_cell, to_cell):
+        num_from_ind = 8 - int(from_cell[1])
+        letter_from_ind = self.letters_to_num[from_cell[0]] - 1
+        num_to_ind = 8 - int(to_cell[1])
+        letter_to_ind = self.letters_to_num[to_cell[0]] - 1
+        self.cells_matrix[num_from_ind][letter_from_ind] = False
+        self.cells_matrix[num_to_ind][letter_to_ind] = True
 
     def __str__(self):
         return f"{self.name} {self.pos}"
@@ -101,31 +103,31 @@ class Rook(Piece):
         if from_cell[0] != to_cell[0] and from_cell[1] != to_cell[1]:
             return False
 
-        #проверка на движение по горизонтали
+        # проверка на движение по горизонтали
         if from_cell[1] == to_cell[1]:
-            from_letter_ind = self.letters_to_num[from_cell[0]]-1
-            to_letter_ind=self.letters_to_num[to_cell[0]]-1
-            ind_of_file=int(from_cell[1])-1
-            if to_letter_ind>from_letter_ind:
-                for i in range(from_letter_ind+1,to_letter_ind+1):
+            from_letter_ind = self.letters_to_num[from_cell[0]] - 1
+            to_letter_ind = self.letters_to_num[to_cell[0]] - 1
+            ind_of_file = 8 - int(from_cell[1])
+            if to_letter_ind > from_letter_ind:
+                for i in range(from_letter_ind + 1, to_letter_ind + 1):
                     if self.cells_matrix[ind_of_file][i] is True:
                         return False
             else:
-                for i in range(to_letter_ind,from_letter_ind):
+                for i in range(to_letter_ind, from_letter_ind):
                     if self.cells_matrix[ind_of_file][i] is True:
                         return False
 
-        #проверка на движение по вертикали
+        # проверка на движение по вертикали
         elif from_cell[0] == to_cell[0]:
-            from_num_ind=int(from_cell[1])-1
-            to_num_ind=int(to_cell[1])-1
-            ind_of_file=self.letters_to_num[from_cell[0]]-1
-            if to_num_ind>from_num_ind:
-                for i in range(from_num_ind+1,to_num_ind+1):
+            from_num_ind = 8 - int(from_cell[1])
+            to_num_ind = 8 - int(to_cell[1])
+            ind_of_file = self.letters_to_num[from_cell[0]] - 1
+            if to_num_ind > from_num_ind:
+                for i in range(from_num_ind + 1, to_num_ind + 1):
                     if self.cells_matrix[i][ind_of_file] is True:
                         return False
             else:
-                for i in range(to_num_ind,from_num_ind):
+                for i in range(to_num_ind, from_num_ind):
                     if self.cells_matrix[i][ind_of_file] is True:
                         return False
 
@@ -136,11 +138,11 @@ class Rook(Piece):
             raise IllegalMoveError(from_cell, to_cell, self.name)
 
         self.replace_piece(from_cell, to_cell)
-        self.replace_piece_matr(from_cell,to_cell)
+        self.replace_piece_matr(from_cell, to_cell)
         self.did_move = True
 
     @is_legal_common
-    def is_legal_capture(self,from_cell,to_cell):
+    def is_legal_capture(self, from_cell, to_cell):
         if not self.cells_map[to_cell]:
             return False
 
@@ -150,43 +152,80 @@ class Rook(Piece):
         if from_cell[0] != to_cell[0] and from_cell[1] != to_cell[1]:
             return False
 
-        #проверка на взятие по горизонтали
+        # проверка на взятие по горизонтали
         if from_cell[1] == to_cell[1]:
-            from_letter_ind = self.letters_to_num[from_cell[0]]-1
-            to_letter_ind=self.letters_to_num[to_cell[0]]-1
-            ind_of_file=int(from_cell[1])-1
-            if to_letter_ind>from_letter_ind:
-                for i in range(from_letter_ind+1,to_letter_ind):
+            from_letter_ind = self.letters_to_num[from_cell[0]] - 1
+            to_letter_ind = self.letters_to_num[to_cell[0]] - 1
+            ind_of_file = 8 - int(from_cell[1])
+            if to_letter_ind > from_letter_ind:
+                for i in range(from_letter_ind + 1, to_letter_ind):
                     if self.cells_matrix[ind_of_file][i] is True:
                         return False
             else:
-                for i in range(to_letter_ind+1,from_letter_ind):
+                for i in range(to_letter_ind + 1, from_letter_ind):
                     if self.cells_matrix[ind_of_file][i] is True:
                         return False
 
-        #проверка на взятие по вертикали
+        # проверка на взятие по вертикали
         elif from_cell[0] == to_cell[0]:
-            from_num_ind=int(from_cell[1])-1
-            to_num_ind=int(to_cell[1])-1
-            ind_of_file=self.letters_to_num[from_cell[0]]-1
-            if to_num_ind>from_num_ind:
-                for i in range(from_num_ind+1,to_num_ind):
+            from_num_ind = 8 - int(from_cell[1])
+            to_num_ind = 8 - int(to_cell[1])
+            ind_of_file = self.letters_to_num[from_cell[0]] - 1
+            if to_num_ind > from_num_ind:
+                for i in range(from_num_ind + 1, to_num_ind):
                     if self.cells_matrix[i][ind_of_file] is True:
                         return False
             else:
-                for i in range(to_num_ind+1,from_num_ind):
+                for i in range(to_num_ind + 1, from_num_ind):
                     if self.cells_matrix[i][ind_of_file] is True:
                         return False
 
         return True
 
+    def capture(self, from_cell, to_cell):
+        if not self.is_legal_capture(from_cell, to_cell):
+            raise IllegalMoveError(from_cell, to_cell, self.name)
 
-    def capture(self,from_cell,to_cell):
-        if not self.is_legal_capture(from_cell,to_cell):
-            raise IllegalMoveError(from_cell,to_cell,self.name)
+        self.replace_piece(from_cell, to_cell)
+        self.replace_piece_matr(from_cell, to_cell)
 
-        self.replace_piece(from_cell,to_cell)
-        self.replace_piece_matr(from_cell,to_cell)
+
+# class Bishop(Piece):
+#     def __init__(self,pos,color):
+#         super().__init__(pos,name='Bishop',color=color)
+#
+#
+#     @is_legal_common
+#     def is_legal_move(self,from_cell,to_cell):
+#         if not self.cells_map[to_cell]:
+#             return False
+#
+#         if -self.cells_map[from_cell].color != self.cells_map[to_cell].color:
+#             return False
+#
+#         from_letter_ind=self.letters_to_num[from_cell[0]]-1
+#         to_letter_ind=self.letters_to_num[to_cell[0]]-1
+#         from_num_ind=int(from_cell[1])-1
+#         to_num_ind=int(to_cell[1])-1
+#
+#         if abs(from_letter_ind-to_letter_ind)!=abs(from_num_ind-to_num_ind):
+#             return False
+#
+#         direction=''
+#         nums_dif=to_num_ind-from_num_ind
+#         letters_dif=to_letter_ind-from_letter_ind
+#
+#         if letters_dif>0 and nums_dif>0:
+#
+#
+#
+#
+#     def move(self,from_cell,to_cell):
+#         if not self.is_legal_move(from_cell,to_cell):
+#             raise IllegalMoveError(from_cell,to_cell,self.name)
+#
+#         self.replace_piece(from_cell,to_cell)
+#         self.replace_piece_matr(from_cell,to_cell)
 
 
 
@@ -224,8 +263,7 @@ class Pawn(Piece):
 
         self.replace_piece(from_cell, to_cell)
         self.last_move = (from_cell, to_cell)
-        self.replace_piece_matr(from_cell,to_cell)
-
+        self.replace_piece_matr(from_cell, to_cell)
 
         if self.color == 1 and int(to_cell[1]) == 8:
             self.promote(to_cell, 'Нужна информация о фигуре, необходим ввод от пользователя (сейчас дефолт: квин)')
@@ -261,7 +299,7 @@ class Pawn(Piece):
 
         self.replace_piece(from_cell, to_cell)
         self.last_move = (from_cell, to_cell)
-        self.replace_piece_matr(from_cell,to_cell)
+        self.replace_piece_matr(from_cell, to_cell)
 
         if self.color == 1 and int(to_cell[1]) == 8:
             self.promote(to_cell, 'Нужна информация о фигуре, необходим ввод от пользователя (сейчас дефолт: квин)')
@@ -308,16 +346,19 @@ class Pawn(Piece):
         self.replace_piece(from_cell, to_cell)
         captured_cell = to_cell[0] + from_cell[-1]
         self.cells_map[captured_cell] = None
-        self.replace_piece_matr(from_cell,to_cell)
+        self.replace_piece_matr(from_cell, to_cell)
 
 
 pawn_w = Pawn('f4', -1)
 pawn_b = Pawn('e5', -1)
 
-
-rook_w=Rook('f1',1)
+rook_w = Rook('f1', 1)
 print(pawn_w.cells_map)
+print(pawn_w.cells_matrix)
 
-rook_w.capture('f1','f4')
+rook_w.capture('f1', 'f5')
 
 print(pawn_w.cells_map)
+for i in range(8):
+    print(pawn_w.cells_matrix[i])
+
