@@ -1,13 +1,11 @@
 from functools import wraps
 
-from test import cells_matrix
-
 
 def is_legal_common(func):
     @wraps(func)
     def wrapper(obj, from_cell, to_cell):
 
-        #а если человек просто тронул фигуру и не собирался ходить? (obj.pos == to_cell)
+        # а если человек просто тронул фигуру и не собирался ходить? (obj.pos == to_cell)
         if to_cell not in obj.cells_map or from_cell not in obj.cells_map or obj.pos == to_cell:
             return False
 
@@ -91,6 +89,64 @@ class Piece(Board):
 
     def __repr__(self):
         return "Object: " + self.__str__()
+
+
+class Knight(Piece):
+    def __init__(self, pos, color):
+        super().__init__(pos, name='Knight', color=color)
+
+    @is_legal_common
+    def is_legal_move(self, from_cell, to_cell):
+        if self.cells_map[to_cell]:
+            return False
+
+        from_letter_ind = self.letters_to_num[from_cell[0]] - 1
+        to_letter_ind = self.letters_to_num[to_cell[0]] - 1
+        from_num_ind = 8 - int(from_cell[1])
+        to_num_ind = 8 - int(to_cell[1])
+
+        nums_dif = to_num_ind - from_num_ind
+        letters_dif = to_letter_ind - from_letter_ind
+
+        if nums_dif ** 2 + letters_dif ** 2 != 5:
+            return False
+
+        return True
+
+    def move(self, from_cell, to_cell):
+        if not self.is_legal_move(from_cell, to_cell):
+            raise IllegalMoveError(from_cell, to_cell, self.name)
+
+        self.replace_piece(from_cell, to_cell)
+        self.replace_piece_matr(from_cell, to_cell)
+
+    @is_legal_common
+    def is_legal_capture(self, from_cell, to_cell):
+        if not self.cells_map[to_cell]:
+            return False
+
+        if self.cells_map[from_cell].color == self.cells_map[to_cell].color:
+            return False
+
+        from_letter_ind = self.letters_to_num[from_cell[0]] - 1
+        to_letter_ind = self.letters_to_num[to_cell[0]] - 1
+        from_num_ind = 8 - int(from_cell[1])
+        to_num_ind = 8 - int(to_cell[1])
+
+        nums_dif = to_num_ind - from_num_ind
+        letters_dif = to_letter_ind - from_letter_ind
+
+        if nums_dif ** 2 + letters_dif ** 2 != 5:
+            return False
+
+        return True
+
+    def capture(self, from_cell, to_cell):
+        if not self.is_legal_capture(from_cell, to_cell):
+            raise IllegalMoveError(from_cell, to_cell, self.name)
+
+        self.replace_piece(from_cell, to_cell)
+        self.replace_piece_matr(from_cell, to_cell)
 
 
 class Rook(Piece):
@@ -191,63 +247,60 @@ class Rook(Piece):
 
 
 class Bishop(Piece):
-    def __init__(self,pos,color):
-        super().__init__(pos,name='Bishop',color=color)
-
+    def __init__(self, pos, color):
+        super().__init__(pos, name='Bishop', color=color)
 
     @is_legal_common
-    def is_legal_move(self,from_cell,to_cell):
+    def is_legal_move(self, from_cell, to_cell):
         if self.cells_map[to_cell]:
             return False
 
-        from_letter_ind=self.letters_to_num[from_cell[0]]-1
-        to_letter_ind=self.letters_to_num[to_cell[0]]-1
-        from_num_ind= 8 - int(from_cell[1])
-        to_num_ind= 8 - int(to_cell[1])
+        from_letter_ind = self.letters_to_num[from_cell[0]] - 1
+        to_letter_ind = self.letters_to_num[to_cell[0]] - 1
+        from_num_ind = 8 - int(from_cell[1])
+        to_num_ind = 8 - int(to_cell[1])
 
-        if abs(from_letter_ind-to_letter_ind)!=abs(from_num_ind-to_num_ind):
+        if abs(from_letter_ind - to_letter_ind) != abs(from_num_ind - to_num_ind):
             return False
 
-        nums_dif=to_num_ind-from_num_ind
-        letters_dif=to_letter_ind-from_letter_ind
+        nums_dif = to_num_ind - from_num_ind
+        letters_dif = to_letter_ind - from_letter_ind
 
-        #direction='rd'
-        if letters_dif>0 and nums_dif>0:
-            for i in range(1,letters_dif+1):
-                if self.cells_matrix[from_num_ind+i][from_letter_ind+i]:
+        # direction='rd'
+        if letters_dif > 0 and nums_dif > 0:
+            for i in range(1, letters_dif + 1):
+                if self.cells_matrix[from_num_ind + i][from_letter_ind + i]:
                     return False
 
-        #direction='ru'
-        elif letters_dif>0 and nums_dif<0:
-            for i in range(1,letters_dif+1):
-                if self.cells_matrix[from_num_ind-i][from_letter_ind+i]:
+        # direction='ru'
+        elif letters_dif > 0 and nums_dif < 0:
+            for i in range(1, letters_dif + 1):
+                if self.cells_matrix[from_num_ind - i][from_letter_ind + i]:
                     return False
 
-        #direction='lu'
-        elif letters_dif<0 and nums_dif<0:
-            for i in range(1,letters_dif+1):
-                if self.cells_matrix[from_num_ind-i][from_letter_ind-i]:
+        # direction='lu'
+        elif letters_dif < 0 and nums_dif < 0:
+            for i in range(1, letters_dif + 1):
+                if self.cells_matrix[from_num_ind - i][from_letter_ind - i]:
                     return False
 
-        #direction='ld'
-        elif letters_dif<0 and nums_dif>0:
+        # direction='ld'
+        elif letters_dif < 0 and nums_dif > 0:
             for i in range(1, letters_dif + 1):
                 if self.cells_matrix[from_num_ind + i][from_letter_ind - i]:
                     return False
 
         return True
 
+    def move(self, from_cell, to_cell):
+        if not self.is_legal_move(from_cell, to_cell):
+            raise IllegalMoveError(from_cell, to_cell, self.name)
 
-    def move(self,from_cell,to_cell):
-        if not self.is_legal_move(from_cell,to_cell):
-            raise IllegalMoveError(from_cell,to_cell,self.name)
-
-        self.replace_piece(from_cell,to_cell)
-        self.replace_piece_matr(from_cell,to_cell)
-
+        self.replace_piece(from_cell, to_cell)
+        self.replace_piece_matr(from_cell, to_cell)
 
     @is_legal_common
-    def is_legal_capture(self,from_cell,to_cell):
+    def is_legal_capture(self, from_cell, to_cell):
         if not self.cells_map[to_cell]:
             return False
 
@@ -291,12 +344,13 @@ class Bishop(Piece):
 
         return True
 
-    def capture(self,from_cell,to_cell):
-        if not self.is_legal_capture(from_cell,to_cell):
-            raise IllegalMoveError(from_cell,to_cell,self.name)
+    def capture(self, from_cell, to_cell):
+        if not self.is_legal_capture(from_cell, to_cell):
+            raise IllegalMoveError(from_cell, to_cell, self.name)
 
-        self.replace_piece(from_cell,to_cell)
-        self.replace_piece_matr(from_cell,to_cell)
+        self.replace_piece(from_cell, to_cell)
+        self.replace_piece_matr(from_cell, to_cell)
+
 
 class Pawn(Piece):
     start_positions = {'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2', 'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7'}
@@ -418,16 +472,16 @@ class Pawn(Piece):
         self.replace_piece_matr(from_cell, to_cell)
 
 
-pawn_w = Pawn('b2', 1)
+pawn_w = Pawn('f4', 1)
 rook_w = Rook('f2', -1)
-bishop_w = Bishop('d4',1)
+bishop_w = Bishop('e6', -1)
+knight_w = Knight('d4', 1)
 print(pawn_w.cells_map)
 for i in range(8):
     print(pawn_w.cells_matrix[i])
 
-bishop_w.capture('d4', 'b2')
+knight_w.move('d4', 'f3')
 
 print(pawn_w.cells_map)
 for i in range(8):
     print(pawn_w.cells_matrix[i])
-
