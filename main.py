@@ -91,6 +91,69 @@ class Piece(Board):
         return "Object: " + self.__str__()
 
 
+class King(Piece):
+    def __init__(self,pos,color):
+        super().__init__(pos,'King',color)
+        self.did_move=False
+
+
+    @is_legal_common
+    def is_legal_move(self,from_cell,to_cell):
+        if self.cells_map[to_cell]:
+            return False
+
+        from_letter_ind = self.letters_to_num[from_cell[0]] - 1
+        to_letter_ind = self.letters_to_num[to_cell[0]] - 1
+        from_num_ind = 8 - int(from_cell[1])
+        to_num_ind = 8 - int(to_cell[1])
+
+        nums_dif = to_num_ind - from_num_ind
+        letters_dif = to_letter_ind - from_letter_ind
+
+        if abs(nums_dif)>1 or abs(letters_dif)>1:
+            return False
+
+        return True
+
+    def move(self,from_cell,to_cell):
+        if not self.is_legal_move(from_cell,to_cell):
+            raise IllegalMoveError(from_cell,to_cell,self.name)
+
+        self.replace_piece(from_cell,to_cell)
+        self.replace_piece_matr(from_cell,to_cell)
+        self.did_move=True
+
+    @is_legal_common
+    def is_legal_capture(self, from_cell, to_cell):
+        if not self.cells_map[to_cell]:
+            return False
+
+        if self.cells_map[from_cell].color==self.cells_map[to_cell].color:
+            return False
+
+        from_letter_ind = self.letters_to_num[from_cell[0]] - 1
+        to_letter_ind = self.letters_to_num[to_cell[0]] - 1
+        from_num_ind = 8 - int(from_cell[1])
+        to_num_ind = 8 - int(to_cell[1])
+
+        nums_dif = to_num_ind - from_num_ind
+        letters_dif = to_letter_ind - from_letter_ind
+
+        if abs(nums_dif) > 1 or abs(letters_dif) > 1:
+            return False
+
+        return True
+
+    def capture(self, from_cell, to_cell):
+        if not self.is_legal_capture(from_cell, to_cell):
+            raise IllegalMoveError(from_cell, to_cell, self.name)
+
+        self.replace_piece(from_cell, to_cell)
+        self.replace_piece_matr(from_cell, to_cell)
+        self.did_move=True
+
+
+
 class Queen(Piece):
     def __init__(self, pos, color):
         super().__init__(pos, name='Queen', color=color)
@@ -108,7 +171,7 @@ class Queen(Piece):
         nums_dif = to_num_ind - from_num_ind
         letters_dif = to_letter_ind - from_letter_ind
 
-        if (not abs(from_letter_ind - to_letter_ind) == abs(from_num_ind - to_num_ind)
+        if (not abs(letters_dif) == abs(nums_dif)
                 and not from_cell[0] == to_cell[0] and not from_cell[1] == to_cell[1]):
             return False
 
@@ -190,7 +253,7 @@ class Queen(Piece):
         nums_dif = to_num_ind - from_num_ind
         letters_dif = to_letter_ind - from_letter_ind
 
-        if (not abs(from_letter_ind - to_letter_ind) == abs(from_num_ind - to_num_ind)
+        if (not abs(letters_dif) == abs(nums_dif)
                 and not from_cell[0] == to_cell[0] and not from_cell[1] == to_cell[1]):
             return False
 
@@ -426,11 +489,11 @@ class Bishop(Piece):
         from_num_ind = 8 - int(from_cell[1])
         to_num_ind = 8 - int(to_cell[1])
 
-        if abs(from_letter_ind - to_letter_ind) != abs(from_num_ind - to_num_ind):
-            return False
-
         nums_dif = to_num_ind - from_num_ind
         letters_dif = to_letter_ind - from_letter_ind
+
+        if abs(letters_dif) != abs(nums_dif):
+            return False
 
         # direction='rd'
         if letters_dif > 0 and nums_dif > 0:
@@ -478,11 +541,11 @@ class Bishop(Piece):
         from_num_ind = 8 - int(from_cell[1])
         to_num_ind = 8 - int(to_cell[1])
 
-        if abs(from_letter_ind - to_letter_ind) != abs(from_num_ind - to_num_ind):
-            return False
-
         nums_dif = to_num_ind - from_num_ind
         letters_dif = to_letter_ind - from_letter_ind
+
+        if abs(letters_dif) != abs(nums_dif):
+            return False
 
         # direction='rd'
         if letters_dif > 0 and nums_dif > 0:
@@ -643,12 +706,13 @@ pawn_w = Pawn('d7', -1)
 # rook_w = Rook('f2', -1)
 # bishop_w = Bishop('e6', -1)
 # knight_w = Knight('d4', 1)
-queen_w = Queen('d4',1)
+queen_w = Queen('f4',1)
+king=King('d6',1)
 print(pawn_w.cells_map)
 for i in range(8):
     print(pawn_w.cells_matrix[i])
 
-queen_w.capture('d4', 'd7')
+king.capture('d6', 'd7')
 
 print(pawn_w.cells_map)
 for i in range(8):
