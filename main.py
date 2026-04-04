@@ -174,6 +174,89 @@ class Queen(Piece):
         self.replace_piece_matr(from_cell, to_cell)
 
 
+    @is_legal_common
+    def is_legal_capture(self,from_cell,to_cell):
+        if not self.cells_map[to_cell]:
+            return False
+
+        if self.cells_map[from_cell].color==self.cells_map[to_cell].color:
+            return False
+
+        from_letter_ind = self.letters_to_num[from_cell[0]] - 1
+        to_letter_ind = self.letters_to_num[to_cell[0]] - 1
+        from_num_ind = 8 - int(from_cell[1])
+        to_num_ind = 8 - int(to_cell[1])
+
+        nums_dif = to_num_ind - from_num_ind
+        letters_dif = to_letter_ind - from_letter_ind
+
+        if (not abs(from_letter_ind - to_letter_ind) == abs(from_num_ind - to_num_ind)
+                and not from_cell[0] == to_cell[0] and not from_cell[1] == to_cell[1]):
+            return False
+
+        # проверка на взятие по горизонтали
+        if from_cell[1] == to_cell[1]:
+            from_letter_ind = self.letters_to_num[from_cell[0]] - 1
+            to_letter_ind = self.letters_to_num[to_cell[0]] - 1
+            ind_of_file = 8 - int(from_cell[1])
+            if to_letter_ind > from_letter_ind:
+                for i in range(from_letter_ind + 1, to_letter_ind):
+                    if self.cells_matrix[ind_of_file][i] is True:
+                        return False
+            else:
+                for i in range(to_letter_ind+1, from_letter_ind):
+                    if self.cells_matrix[ind_of_file][i] is True:
+                        return False
+
+        # проверка на взятие по вертикали
+        elif from_cell[0] == to_cell[0]:
+            from_num_ind = 8 - int(from_cell[1])
+            to_num_ind = 8 - int(to_cell[1])
+            ind_of_file = self.letters_to_num[from_cell[0]] - 1
+            if to_num_ind > from_num_ind:
+                for i in range(from_num_ind + 1, to_num_ind):
+                    if self.cells_matrix[i][ind_of_file] is True:
+                        return False
+            else:
+                for i in range(to_num_ind+1, from_num_ind):
+                    if self.cells_matrix[i][ind_of_file] is True:
+                        return False
+
+        # direction='rd'
+        elif letters_dif > 0 and nums_dif > 0:
+            for i in range(1, letters_dif):
+                if self.cells_matrix[from_num_ind + i][from_letter_ind + i]:
+                    return False
+
+        # direction='ru'
+        elif letters_dif > 0 and nums_dif < 0:
+            for i in range(1, letters_dif):
+                if self.cells_matrix[from_num_ind - i][from_letter_ind + i]:
+                    return False
+
+        # direction='lu'
+        elif letters_dif < 0 and nums_dif < 0:
+            for i in range(1, letters_dif):
+                if self.cells_matrix[from_num_ind - i][from_letter_ind - i]:
+                    return False
+
+        # direction='ld'
+        elif letters_dif < 0 and nums_dif > 0:
+            for i in range(1, letters_dif):
+                if self.cells_matrix[from_num_ind + i][from_letter_ind - i]:
+                    return False
+
+        return True
+
+
+    def capture(self,from_cell,to_cell):
+        if not self.is_legal_capture(from_cell,to_cell):
+            raise IllegalMoveError(from_cell,to_cell,self.name)
+
+        self.replace_piece(from_cell,to_cell)
+        self.replace_piece_matr(from_cell,to_cell)
+
+
 class Knight(Piece):
     def __init__(self, pos, color):
         super().__init__(pos, name='Knight', color=color)
@@ -556,7 +639,7 @@ class Pawn(Piece):
 
 
 #проверить ход королевы (должно работать)
-pawn_w = Pawn('f4', 1)
+pawn_w = Pawn('d7', -1)
 # rook_w = Rook('f2', -1)
 # bishop_w = Bishop('e6', -1)
 # knight_w = Knight('d4', 1)
@@ -565,7 +648,7 @@ print(pawn_w.cells_map)
 for i in range(8):
     print(pawn_w.cells_matrix[i])
 
-queen_w.move('d4', 'b2')
+queen_w.capture('d4', 'd7')
 
 print(pawn_w.cells_map)
 for i in range(8):
