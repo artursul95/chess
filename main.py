@@ -56,6 +56,10 @@ def main():
                             else:
                                 piece.move(selected_cell, cell)
 
+                        for i in piece.cells_matrix:
+                            print(i)
+                        print('\n\n')
+
                         is_white_move = not is_white_move
 
                     except IllegalMoveError:

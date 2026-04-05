@@ -698,6 +698,11 @@ class Pawn(Piece):
         self.replace_piece(from_cell, to_cell)
         captured_cell = to_cell[0] + from_cell[-1]
         self.cells_map[captured_cell] = None
+
+        captured_num_ind=8-int(captured_cell[1])
+        captured_letter_ind=self.letters_to_num[captured_cell[0]]-1
+        self.cells_matrix[captured_num_ind][captured_letter_ind]=False
+
         self.replace_piece_matr(from_cell, to_cell)
 
 
