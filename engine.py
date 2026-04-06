@@ -152,6 +152,71 @@ class King(Piece):
         self.replace_piece_matr(from_cell, to_cell)
         self.did_move=True
 
+    @is_legal_common
+    def is_legal_castle(self,from_cell,to_cell):
+
+        rook=(None,None)
+
+        if self.did_move:
+            return (False,rook)
+
+        if abs(self.letters_to_num[from_cell[0]]-self.letters_to_num[to_cell[0]])!=2:
+            return (False,rook)
+
+        if self.letters_to_num[to_cell[0]]-self.letters_to_num[from_cell[0]]==2:
+            if self.color==1:
+                if not isinstance(self.cells_map['h1'],Rook):
+                    return (False,rook)
+                for cell in ['f1','g1']:
+                    if self.cells_map[cell]:
+                        return (False,rook)
+                if self.cells_map['h1'].did_move:
+                    return (False,rook)
+                rook=('h1','f1')
+            else:
+                if not isinstance(self.cells_map['h8'],Rook):
+                    return (False,rook)
+                for cell in ['g8','f8']:
+                    if self.cells_map[cell]:
+                        return (False,rook)
+                if self.cells_map['h8'].did_move:
+                    return (False,rook)
+                rook = ('h8', 'f8')
+        else:
+            if self.color == 1:
+                if not isinstance(self.cells_map['a1'], Rook):
+                    return (False,rook)
+                for cell in ['b1', 'c1','d1']:
+                    if self.cells_map[cell]:
+                        return (False,rook)
+                if self.cells_map['a1'].did_move:
+                    return (False,rook)
+                rook=('a1','d1')
+            else:
+                if not isinstance(self.cells_map['a8'], Rook):
+                    return (False,rook)
+                for cell in ['b8', 'c8','d8']:
+                    if self.cells_map[cell]:
+                        return (False,rook)
+                if self.cells_map['a8'].did_move:
+                    return (False,rook)
+                rook = ('a8', 'd8')
+
+        return (True, rook)
+
+
+    def castle(self,from_cell,to_cell):
+        is_legal, rook_cells=self.is_legal_castle(from_cell,to_cell)
+        if not is_legal:
+            raise IllegalMoveError(from_cell,to_cell,self.name)
+
+        self.replace_piece(from_cell,to_cell)
+        self.replace_piece_matr(from_cell,to_cell)
+        self.did_move=True
+        #ПЕРЕМЕСТИТЬ ЛАДЬЮ
+        rook=self.cells_map[rook_cells[0]]
+        rook.replace_piece(rook_cells[0],rook_cells[1])
+        rook.replace_piece_matr(rook_cells[0],rook_cells[1])
 
 
 class Queen(Piece):

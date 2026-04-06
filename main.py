@@ -50,8 +50,10 @@ def main():
                             piece.capture(selected_cell, cell)
 
                         else:
-                            # сначала проверяем en passant
-                            if hasattr(piece, "is_legal_en_passant") and piece.is_legal_en_passant(selected_cell, cell):
+
+                            if hasattr(piece,'is_legal_castle') and piece.is_legal_castle(selected_cell,cell)[0]:
+                                piece.castle(selected_cell,cell)
+                            elif hasattr(piece, "is_legal_en_passant") and piece.is_legal_en_passant(selected_cell, cell):
                                 piece.en_passant(selected_cell, cell)
                             else:
                                 piece.move(selected_cell, cell)
